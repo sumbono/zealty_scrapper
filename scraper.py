@@ -1,5 +1,6 @@
 import requests
 import json
+import pandas as pd
 
 url = "https://bcrealestatemap.ca/svcFetchDB.php"
 
@@ -27,3 +28,6 @@ response = requests.request("POST", url, headers=headers, data=payload)
 with open ("response.json", "w") as f:
   f.write(json.dumps(response.json()))
   f.close()
+
+df = pd.DataFrame(response.json()["rows"])
+df.to_csv("response.csv", index=False)
