@@ -29,5 +29,6 @@ with open ("response.json", "w") as f:
   f.write(json.dumps(response.json()))
   f.close()
 
+# Create dataframe from key rows json
 df = pd.DataFrame(response.json()["rows"])
 df.to_csv("response.csv", index=False)
