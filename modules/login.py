@@ -1,6 +1,9 @@
 from playwright.async_api import async_playwright
 import time
 import asyncio
+
+from core.config import BaseConfig
+
 # login_url = "https://www.bccondosandhomes.com/login"
 login_url = "https://www.zealty.ca/search.html"
 
@@ -39,7 +42,7 @@ async def email_login():
         await page.click('#loginForm > div:nth-child(13) > button:nth-child(2)')
 
         await page.wait_for_timeout(5000)
-        await context.storage_state(path="cookie_state.json")
+        await context.storage_state(path="{}/temp/cookie_state.json".format(BaseConfig.BASE_DIR))
 
         await context.close()
         await browser.close()
