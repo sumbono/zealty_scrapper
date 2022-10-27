@@ -160,3 +160,4 @@ cython_debug/
 .idea/
 # Playwright Cookies File
 cookie_state.json
+.DS_Store

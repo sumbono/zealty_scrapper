@@ -45,7 +45,6 @@ async def email_login():
         await context.storage_state(path="{}/temp/cookie_state.json".format(BaseConfig.BASE_DIR))
 
         await context.close()
-        await browser.close()
-
+        
 if __name__ == "__main__":
     asyncio.run(email_login())

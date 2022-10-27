@@ -4,6 +4,8 @@ from playwright.async_api import async_playwright
 import asyncio
 import aiofiles
 
+from core.config import BaseConfig
+
 main_url = "https://www.zealty.ca/search.html"
 detail_url = "https://www.zealty.ca/mls-{}/{}-{}"#.format(mls,building.replace("","-"),province)
 
@@ -11,23 +13,14 @@ url_api = ""
 headers = {}
 payload = {}
 
-async def on_response(response):
-    global status_code
-    global resp_body
 
-    if "svcFetchDB.php" in response.url:
-        status_code = response.status
-        try:
-          resp_body = await response.json()
-        except:
-          pass
 
-async def scrape_main_page():
-   async with async_playwright() as p:
-      chromium = p.chromium
-      browser = await chromium.launch(headless=True)
-      context = await browser.new_context(storage_state="cookie_state.json")
-      page = await context.new_page()
+async def scrape_home_page_api(page, on_response, resp_body):
+  #  async with async_playwright() as p:
+      # chromium = p.chromium
+      # browser = await chromium.launch(headless=True)
+      # context = await browser.new_context(storage_state="cookie_state.json")
+      # page = await context.new_page()
       page.on("response", on_response)
       await page.goto(main_url,wait_until="networkidle")
       
@@ -74,8 +67,7 @@ async def scrape_main_page():
       "2nd Agent's Name", "Ownership Interest",
       "Image URL(s)","Province"]]
 
-      su.to_csv("response.csv", index=False)
-      await browser.close()
+      su.to_csv("{}/temp/home_page_api.csv".format(BaseConfig.BASE_DIR), index=False)
 
       return su
 

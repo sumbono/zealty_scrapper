@@ -1,6 +1,7 @@
+from gettext import find
 import pandas as pd
 from bs4 import BeautifulSoup
-from core.config import BASE_DIR
+from core.config import BaseConfig
 
 def scrape_home_html(table_html_string):
     soup = BeautifulSoup(table_html_string, "html.parser")
@@ -65,9 +66,12 @@ def scrape_home_html(table_html_string):
                 if div_size_item.findChild("div"):
                     parent_and_child_element = str(div_size_item).split('<div style="font-size: smaller;">')
                     parent_element = BeautifulSoup(parent_and_child_element[0],"html.parser").get_text()
-                    child_element = BeautifulSoup(parent_and_child_element[1],"html.parser")
-                    child_element = str(child_element).split("\n")[0] + " " +\
-                        str(child_element).split("\n")[1].strip()
+                    try:
+                        child_element = BeautifulSoup(parent_and_child_element[1],"html.parser").get_text()
+                    except:
+                        child_element = BeautifulSoup(parent_and_child_element[1],"html.parser")
+                        child_element = str(child_element).split("\n")[0] + " " +\
+                            str(child_element).split("\n")[1].strip()
                     size_column += "|" + parent_element + '|' + child_element 
                 else:
                     if "\n" not in str(div_size_item) :
@@ -94,10 +98,16 @@ def scrape_home_html(table_html_string):
                         date_column += "|" + parent_element
                 elif "\n" not in str(find_date_item):
                     if date_column=="":
+                        raise Exception(find_date_item)
+
                         date_column += find_date_item.get_text()
                     else :
+                        raise Exception(date_column)
                         date_column += "|" + find_date_item.get_text()
-
+                
+                # If there's no child
+                else:
+                    date_column += find_date_item.get_text()
             format_dict[thlist[6]] = date_column
 
             # Extract Seller's Agent
@@ -147,4 +157,4 @@ def scrape_home_html(table_html_string):
 
     df = pd.DataFrame(list_of_dict_table)
     print("Exporting home page table to csv output..")
-    df.to_csv("{}/temp/home_page_html.csv".format(BASE_DIR),index=False)
+    df.to_csv("{}/temp/home_page_html.csv".format(BaseConfig.BASE_DIR),index=False)

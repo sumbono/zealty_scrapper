@@ -3,6 +3,7 @@ import time
 import datetime
 import asyncio
 import aiofiles
+import os
 
 from core.config import BaseConfig
 
@@ -19,9 +20,9 @@ async def session_checker():
         print("Cookie Expired Time :",cookie_state_json["cookies"][0]["expires"])
 
         if unix_this_time <= cookie_state_json["cookies"][0]["expires"]:
-            print("STATUS = Still login")
+            print("STATUS : Still login")
         else:
-            print("STATUS = Session expired!! Must login again!!")
+            print("STATUS : Session expired!! Must login again!!")
     except:
         print("cookie_state.json is not available in {}".format(os.path.join(BaseConfig.BASE_DIR,"temp")))
         print("Please login to genereate cookie_state.json!!!")
