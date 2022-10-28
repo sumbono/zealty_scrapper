@@ -11,6 +11,7 @@ from modules.login import email_login
 from modules.scrape_home_page_html import scrape_home_html
 
 MAIN_URL = "https://zealty.ca/search.html"
+url_detail = "https://www.zealty.ca/mls-{}/{}-{}"#.format(mls,building.replace("","-"),province)
 
 async def on_response(response):
     global status_code
@@ -100,16 +101,20 @@ async def scrape_main_page(main_url):
         await page.click("#searchResults > div.noprint > div > div > i")
         await page.wait_for_selector("#searchResults > div.table-container > div > table")
 
-        #  Scrape 28 home page api
-        # print("Getting API page table home page...")
-        # export_home_page_api(resp_body=resp_body)
+        #  Scrape 28 rows home page api data
+        print("Getting API page table home page...")
+        export_home_page_api(resp_body=resp_body)
 
-        # # Scrape 28 home page html
+        # # Scrape 28 rows home page html data
         print("Getting HTML page table home page...")
         main_page_selection = await page.query_selector("#searchResults > div.table-container > div > table")
         home_page_html = await main_page_selection.inner_html()
         scrape_home_html(home_page_html)
 
+        # Select page and scrape per page detail
+        await page.click("#footer > div > button:nth-child(3)")
+        
+        
         await context.close()
         await browser.close()
 
