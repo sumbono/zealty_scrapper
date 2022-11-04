@@ -25,19 +25,9 @@ async def on_response(response):
         except:
           pass
 
-def export_home_page_api(resp_body):
-  #  async with async_playwright() as p:
-      # chromium = p.chromium
-      # browser = await chromium.launch(headless=True)
-      # context = await browser.new_context(storage_state="cookie_state.json")
-      # page = await context.new_page()
-    #   page.on("response", on_response)
-    #   await page.goto(main_url,wait_until="networkidle")
-      
-      # Create dataframe from key rows json
-      # columns = ["MLS", "", "",]
+def export_home_page_api(resp_body: dict, filename: str) -> None:
       df = pd.DataFrame(resp_body["rows"])
-      df.to_csv("{}/temp/df_home_page_api.csv".format(BaseConfig.BASE_DIR), index=False)
+      df.to_csv(f"{BaseConfig.BASE_DIR}/temp/df_{filename}.csv", index=False)
       mapping = {
         df.columns[0]: 'MLS', 
         df.columns[5]: 'Building',
@@ -79,14 +69,15 @@ def export_home_page_api(resp_body):
       "2nd Agent's Name", "Ownership Interest",
       "Image URL(s)","Province"]]
 
-      su.to_csv("{}/temp/home_page_api.csv".format(BaseConfig.BASE_DIR), index=False)
+      su.to_csv(f"{BaseConfig.BASE_DIR}/temp/data_{filename}.csv", index=False)
 
-      return su
+      # return su
 
 async def scrape_main_page(main_url):
     async with async_playwright() as p:
         chromium = p.chromium
         browser = await chromium.launch(headless=False)
+        # browser = await chromium.launch()
         check_temp()
         await session_checker()
         try :
@@ -100,21 +91,62 @@ async def scrape_main_page(main_url):
         await page.wait_for_selector("#searchResults > div.noprint > div > div > i")
         await page.click("#searchResults > div.noprint > div > div > i")
         await page.wait_for_selector("#searchResults > div.table-container > div > table")
-
+        
         #  Scrape 28 rows home page api data
         print("Getting API page table home page...")
-        export_home_page_api(resp_body=resp_body)
+        export_home_page_api(resp_body=resp_body, filename='hp_01')
 
+        # Select 'All of British Columbia' Region
+        await page.locator('select#database').select_option('allBC')
+
+        # select status
+        await page.get_by_label('For Sale').check()
+
+        # select property type
+        await page.locator('div.multiPopup').click()
+        await page.wait_for_selector("div#typeMenuPanel > div > label > div > div > input")
+
+        await page.locator("div#typeMenuPanel > div > label > div > div > input[value='HSE']").check()
+        await page.locator("div#typeMenuPanel > div > label > div > div > input[value='APT']").check()
+        await page.locator("div#typeMenuPanel > div > label > div > div > input[value='TWN']").check()
+        await page.locator("div#typeMenuPanel > div > label > div > div > input[value='PAD']").check()
+        await page.locator("div#typeMenuPanel > div > label > div > div > input[value='MUF']").check()
+        await page.locator("div#typeMenuPanel > div > label > div > div > input[value='LND']").check()
+        await page.locator("div#typeMenuPanel > div > label > div > div > input[value='COM']").check()
+
+        await page.screenshot(path=f"{BaseConfig.BASE_DIR}/temp/homepage_select_property_type.png", ) #full_page=True, 
+
+        await page.locator("div#typeMenuPanel > div > div > button.tall:has-text('Done')").click()
+
+        await page.wait_for_selector("#searchResults > div.table-container > div > table")
+        
+        await page.screenshot(path=f"{BaseConfig.BASE_DIR}/temp/homepage1.png", full_page=True ) 
+        
+        #  Scrape 28 rows home page api data
+        print("Getting API page table home page...")
+        export_home_page_api(resp_body=resp_body, filename='hp_filtered_01')
+
+        
         # # Scrape 28 rows home page html data
-        print("Getting HTML page table home page...")
-        main_page_selection = await page.query_selector("#searchResults > div.table-container > div > table")
-        home_page_html = await main_page_selection.inner_html()
-        scrape_home_html(home_page_html)
+        # print("Getting HTML page table home page...")
+        # main_page_selection = await page.query_selector("#searchResults > div.table-container > div > table")
+        # home_page_html = await main_page_selection.inner_html()
+        
+        # scrape_home_html(home_page_html)
 
-        # Select page and scrape per page detail
-        await page.click("#footer > div > button:nth-child(3)")
+        # # Select page and scrape per page detail
+        # await page.click("#footer > div > button:nth-child(3)")
         
+        await page.evaluate('doSearch(5, true);')
         
+        await page.pause()
+        
+        await page.screenshot(path=f"{BaseConfig.BASE_DIR}/temp/homepage2.png", full_page=True)
+        
+        #  Scrape 28 rows home page api data
+        print("Getting API page table home page...")
+        export_home_page_api(resp_body=resp_body, filename='hp_filtered_05')
+                
         await context.close()
         await browser.close()
 
