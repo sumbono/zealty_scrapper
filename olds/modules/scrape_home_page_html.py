@@ -7,7 +7,8 @@ def scrape_home_html(table_html_string):
     soup = BeautifulSoup(table_html_string, "html.parser")
     tr = soup.find_all("tr")
     thlist = [th_item.get_text() for th_item in tr[0] if th_item.get_text() != "" and th_item.get_text() != "\n" ]
-    thlist.insert(0, "Image's Count")    
+    thlist.insert(0, "Image's Count")
+    
     # List that contain format_dict(s) for pandas dataframe
     list_of_dict_table = []
     for index_tr_item,tr_item in enumerate(tr[1:]):
