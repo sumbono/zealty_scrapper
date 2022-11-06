@@ -15,7 +15,7 @@ def main():
     )
     parser.add_argument(
         "page", type=str,
-        help="The PAGE of the Zealty URL to be crawled. Available choices: 'search' or 'detail' (in progress)"
+        help="The PAGE of the Zealty URL to be crawled. Available choices: 'search' or 'detail'"
     )
     parser.add_argument(
         "property_status", type=str,
@@ -43,7 +43,7 @@ def main():
         "--debug", "-d",
         help=(
             """
-            For `detail` Page only. The option for testing or production purpose. 
+            The option for testing purpose. 
             Available choices: 'yes' or 'no'.
             If not set, default value is 'no'.
             """
@@ -60,7 +60,7 @@ def main():
     start_time = time.time()
     
     if args.page == 'search':
-        asyncio.run(search(property_status=prop_status, page_start=int(start_page), page_end=int(end_page)))
+        asyncio.run(search(property_status=prop_status, page_start=int(start_page), page_end=int(end_page), debug=debug))
     else:
         asyncio.run(detail(property_status=prop_status, page_start=int(start_page), page_end=int(end_page), download_img=with_img, debug=debug))
     
