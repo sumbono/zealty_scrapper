@@ -1,16 +1,15 @@
-from playwright.async_api import Browser, Page
+from playwright.async_api import Browser, BrowserContext, Page
+from typing import Tuple
 
 from config import BaseConfig
 
-# login_url = "https://www.bccondosandhomes.com/login"
-# login_url = "https://www.zealty.ca/search.html"
 
 login = "lunatictina1@outlook.com"
 password = "!$K$cmkkT6YjMw2"
 # login = "samwiro2209@gmail.com"
 # password = "wiro2209sam"
 
-async def email_login(url:str, browser: Browser) -> Page:
+async def email_login(url:str, browser: Browser) -> Tuple[BrowserContext, Page]:
     context = await browser.new_context()
     page =  await context.new_page()
     
@@ -36,4 +35,4 @@ async def email_login(url:str, browser: Browser) -> Page:
     
     await context.storage_state(path="{}/temp/cookie_state.json".format(BaseConfig.BASE_DIR))
 
-    return page
+    return context, page

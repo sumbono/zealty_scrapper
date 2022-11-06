@@ -1,6 +1,6 @@
 import asyncio
-import sys
 import os
+import sys
 import time
 
 from playwright.async_api import async_playwright
@@ -10,7 +10,6 @@ for dir_item in os.listdir(os.path.abspath(os.path.join('.'))):
     
 from config import BaseConfig, SEARCH_URL
 from libs.check_temp_dir import check_temp_dir
-from libs.cookie_checker import session_checker
 from libs.export_result import export_result
 from libs.login import email_login
 
@@ -32,10 +31,10 @@ async def search(property_status: str='sold', page_start: int=1, page_end: int=1
     async with async_playwright() as p:
         
         chromium = p.chromium
-        browser = await chromium.launch(headless=False, slow_mo=100)
+        browser = await chromium.launch() #headless=False, slow_mo=100
         
         check_temp_dir()
-        page = await email_login(SEARCH_URL, browser)
+        context, page = await email_login(SEARCH_URL, browser)
         page.on("response", on_response)
         
         await page.wait_for_selector("#searchResults > div.noprint > div > div > i")
@@ -86,17 +85,39 @@ async def search(property_status: str='sold', page_start: int=1, page_end: int=1
         for num in range(page_start, page_end+1):
             if num==1:
                 print(f"Getting the #{num} page properties's details...")
-                export_result(resp_body=resp_body, filename=f"{property_status}/search_{page_start}_{page_end}", is_first_page=True)
+                export_result(
+                    resp_body=resp_body, 
+                    filename=f"{property_status}/csv/search_{page_start}_{page_end}", 
+                    resp_name='svcFetchDB', 
+                    is_first_page=True, 
+                    is_search=True
+                )
+            elif num==page_start:
+                await page.evaluate(f'doSearch({num}, true);')
+                await page.wait_for_event("response", on_response)
+                await page.wait_for_timeout(5000)
+                print(f"Getting the #{num} page properties's details...")
+                export_result(
+                    resp_body=resp_body, 
+                    filename=f"{property_status}/csv/search_{page_start}_{page_end}", 
+                    resp_name='svcFetchDB', 
+                    is_first_page=True, 
+                    is_search=True
+                )
             else:
                 await page.evaluate(f'doSearch({num}, true);')
                 await page.wait_for_event("response", on_response)
-                # await page.wait_for_selector("div#searchResults > div.table-container > div.search-table > table.stripedTable")
-                
-                await page.wait_for_timeout(2000)
+                await page.wait_for_timeout(5000)
                 print(f"Getting the #{num} page properties's details...")
-                export_result(resp_body=resp_body, filename=f"{property_status}/search_{page_start}_{page_end}")
+                export_result(
+                    resp_body=resp_body, 
+                    filename=f"{property_status}/csv/search_{page_start}_{page_end}", 
+                    resp_name='svcFetchDB', 
+                    is_search=True
+                )
             
-            await page.screenshot(path=f"{BaseConfig.BASE_DIR}/temp/{property_status}/search_page_{num}.png") #, full_page=True 
+            # await page.screenshot(path=f"{BaseConfig.BASE_DIR}/temp/{property_status}/csv/search_page_{num}.png")
+            
         
         await page.close()
         await browser.close()

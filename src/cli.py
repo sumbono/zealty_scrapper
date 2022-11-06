@@ -6,11 +6,12 @@ import argparse
 import asyncio
 import time
 
+from workers.detail import detail
 from workers.search import search
 
 def main():
     parser = argparse.ArgumentParser(
-        description="A crawler of the Zealty.ca"
+        description="A crawler of Zealty.ca"
     )
     parser.add_argument(
         "page", type=str,
@@ -28,19 +29,42 @@ def main():
         "--end", "-e",
         help=("The last page number to be crawled. If not set, default value is 10.")
     )
+    parser.add_argument(
+        "--img", "-i",
+        help=(
+            """
+            For `detail` Page only. The option to download the image of each property. 
+            Available choices: 'yes' or 'no'.
+            If not set, default value is 'no'.
+            """
+        )
+    )
+    parser.add_argument(
+        "--debug", "-d",
+        help=(
+            """
+            For `detail` Page only. The option for testing or production purpose. 
+            Available choices: 'yes' or 'no'.
+            If not set, default value is 'no'.
+            """
+        )
+    )
     args = parser.parse_args()
     
-    if args.page == 'search':
-        prop_status = args.property_status
-        start_page = args.start or '1'
-        end_page = args.end or '10'
-        
-        start_time = time.time()
-        asyncio.run(search(property_status=prop_status, page_start=int(start_page), page_end=int(end_page)))
-        print("--- %s seconds ---" % (time.time() - start_time))
+    prop_status = args.property_status
+    start_page = args.start or '1'
+    end_page = args.end or '10'
+    with_img = True if args.img=='yes' else False
+    debug = True if args.debug=='yes' else False
     
+    start_time = time.time()
+    
+    if args.page == 'search':
+        asyncio.run(search(property_status=prop_status, page_start=int(start_page), page_end=int(end_page)))
     else:
-        print(f"This '{args.page}' page crawler, not yet ready.")
+        asyncio.run(detail(property_status=prop_status, page_start=int(start_page), page_end=int(end_page), download_img=with_img, debug=debug))
+    
+    print("\n--- %s seconds ---" % (time.time() - start_time))
 
 if __name__ == "__main__":
     main()

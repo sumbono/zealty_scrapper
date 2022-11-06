@@ -53,3 +53,8 @@ optional arguments:
 ```bash
 $ poetry run python src/cli.py search active --start 5 --end 10
 ```
+
+#### Results
+- The csv file would be generated in `temp/<property_status>/<page>_<property_status>_<start_page>_<end_page>.csv`
+- `property_status`: 'active', 'sold', 'expired'.
+- `page`: 'search' or 'detail'.
