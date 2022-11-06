@@ -164,3 +164,7 @@ cookie_state.json
 
 *.csv
 *.png
+# *.jpg
+temp/active/img/*
+temp/sold/img/*
+temp/expired/img/*
