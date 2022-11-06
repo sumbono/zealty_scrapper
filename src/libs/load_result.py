@@ -33,7 +33,7 @@ def get_property_metadata(
     results: List[Dict] = []
     for mls in mls_list:
         df_det = new_df.loc[mls]
-        data = {'mls': mls, 'url': df_det['URL'], 'img_urls': ast.literal_eval(df_det['Image URL(s)'])}
+        data = {'mls': mls, 'url': df_det['URL'], 'img_urls': ast.literal_eval(df_det['Image URL(s)']), 'dataframe':df.loc[df['MLS']==mls]}
         # if with_image_urls:
         #     data['img_urls'] = ast.literal_eval(df_det['Image URL(s)'])
         results.append(data)

@@ -26,20 +26,19 @@ async def on_response(response):
         except Exception as err:
             print(f"Error while get the response from API - {err}")
         
-async def search(property_status: str='sold', page_start: int=1, page_end: int=10) -> None:
+async def search(property_status: str='sold', page_start: int=1, page_end: int=10, debug: bool=False) -> None:
     
     async with async_playwright() as p:
         
         chromium = p.chromium
-        browser = await chromium.launch() #headless=False, slow_mo=100
+        browser = await chromium.launch(headless=not debug) #headless=False, slow_mo=100
         
         check_temp_dir()
         context, page = await email_login(SEARCH_URL, browser)
-        page.on("response", on_response)
+        # page.on("response", on_response)
         
         await page.wait_for_selector("#searchResults > div.noprint > div > div > i")
         await page.click("#searchResults > div.noprint > div > div > i")
-        # await page.wait_for_selector("#searchResults > div.table-container > div > table")
         
         # Select 'All of British Columbia' Region
         await page.locator('select#database').select_option('allBC')
@@ -80,6 +79,7 @@ async def search(property_status: str='sold', page_start: int=1, page_end: int=1
 
         await page.locator("div#typeMenuPanel > div > div > button.tall:has-text('Done')").click()
         await page.wait_for_timeout(5000)
+        page.on("response", on_response)
         
         #scrape search results
         for num in range(page_start, page_end+1):
@@ -94,9 +94,10 @@ async def search(property_status: str='sold', page_start: int=1, page_end: int=1
                 )
             elif num==page_start:
                 await page.evaluate(f'doSearch({num}, true);')
-                await page.wait_for_event("response", on_response)
+                # await page.wait_for_event("response", on_response)
                 await page.wait_for_timeout(5000)
                 print(f"Getting the #{num} page properties's details...")
+                page.on("response", on_response)
                 export_result(
                     resp_body=resp_body, 
                     filename=f"{property_status}/csv/search_{page_start}_{page_end}", 
@@ -106,9 +107,10 @@ async def search(property_status: str='sold', page_start: int=1, page_end: int=1
                 )
             else:
                 await page.evaluate(f'doSearch({num}, true);')
-                await page.wait_for_event("response", on_response)
+                # await page.wait_for_event("response", on_response)
                 await page.wait_for_timeout(5000)
                 print(f"Getting the #{num} page properties's details...")
+                page.on("response", on_response)
                 export_result(
                     resp_body=resp_body, 
                     filename=f"{property_status}/csv/search_{page_start}_{page_end}", 
@@ -116,13 +118,8 @@ async def search(property_status: str='sold', page_start: int=1, page_end: int=1
                     is_search=True
                 )
             
-            # await page.screenshot(path=f"{BaseConfig.BASE_DIR}/temp/{property_status}/csv/search_page_{num}.png")
-            
+            if debug:
+                await page.screenshot(path=f"{BaseConfig.BASE_DIR}/temp/{property_status}/csv/search_page_{num}.png")
         
         await page.close()
         await browser.close()
-
-if __name__ == "__main__":
-    start_time = time.time()
-    asyncio.run(search())
-    print("--- %s seconds ---" % (time.time() - start_time))

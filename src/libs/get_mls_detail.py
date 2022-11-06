@@ -3,12 +3,11 @@ import pandas as pd
 import sys
 
 from playwright.async_api import Page
+from typing import Dict, Union
 
 for dir_item in os.listdir(os.path.abspath(os.path.join('.'))):
     sys.path.append(dir_item)
-    
-from config import BaseConfig
-from libs.check_temp_dir import check_temp_dir
+
 from libs.export_result import export_result
 from workers.background import background_threads
 
@@ -68,33 +67,34 @@ async def on_response(response):
         except Exception as err:
             print(f"Error while get the response svcFetchDB from API - {err}")
 
-def process_details(mls,resp_body,resp_body_ah,resp_body_bp,resp_body_ns,filename,is_first_page):
+def process_details(
+    mls: str, 
+    resp_body: Dict, resp_body_ah: Dict, resp_body_bp: Dict, resp_body_ns: Dict,
+    filename: str, is_first_page: bool, df: Union[pd.DataFrame, None]
+):
+    
     try:
-        if len(resp_body["rows"])>1:
-            # for row in resp_body["rows"]:
-            #     if row[0].strip()==mls.strip():
-            #         resp_body["rows"] = [row]
-            #         break
-            resp_body["rows"] = resp_body["rows"][:1]
+        if resp_body['rows'][0][0] != mls:
+            resp_body = None
     except Exception as err:
-        print(f"Error while processing svcFetchDB data - {err}")
+        print(f"Error while parsing resp_body - {err}")
+        
+    prop_main_detail = df
     
-    prop_main_detail: pd.DataFrame = export_result(resp_body=resp_body, resp_name='svcFetchDB')
-    
-    if resp_body_ns:
+    if resp_body and resp_body_ns:
         nearby_schools: list = export_result(resp_body=resp_body_ns, resp_name='svcGetInfoDB')
         prop_main_detail['nearby_schools'] = [nearby_schools]
     else:
         print(f"Error while add nearby_schools")
         prop_main_detail['nearby_schools'] = ""
         
-    if resp_body_bp:
+    if resp_body and resp_body_bp:
         prop_main_detail['building_permits'] = [resp_body_bp]
     else:
         print(f"Error while add building_permits")
         prop_main_detail['building_permits'] = ""
         
-    if resp_body_ah:
+    if resp_body and resp_body_ah:
         assessments: list = export_result(resp_body=resp_body_ah, resp_name='svcGetAssessmentHistory')
         prop_main_detail['assessments'] = [assessments]
     else:
@@ -106,13 +106,13 @@ def process_details(mls,resp_body,resp_body_ah,resp_body_bp,resp_body_ns,filenam
     export_result(filename=filename, is_first_page=is_first_page, just_export=True, df=prop_main_detail)
 
 
-async def mls_detail(page: Page, mls: str, url: str, property_status: str='active', filename: str='', is_first_page: bool=False) -> None:
+async def mls_detail(
+        page: Page, mls: str, url: str, 
+        property_status: str='active', filename: str='', is_first_page: bool=False,
+        df: pd.DataFrame=None
+    ) -> None:
     
     await page.goto(url=url, wait_until="commit")
-    page.on("response", on_response)
-    page.on("response", on_response_ns)
-    page.on("response", on_response_bp)
-    page.on("response", on_response_ah)
     
     try:
         await page.wait_for_selector("div#container")
@@ -125,10 +125,12 @@ async def mls_detail(page: Page, mls: str, url: str, property_status: str='activ
     except Exception as err:
         print(f"Error while waiting elements - {err}")
     
-    # await page.wait_for_timeout(3000)
+    await page.wait_for_timeout(3000)
     
-    # print("get additonal property details...")
-    # await page.close()
-
+    page.on("response", on_response)
+    page.on("response", on_response_ns)
+    page.on("response", on_response_bp)
+    page.on("response", on_response_ah)
+    
     print("Start process the data...")
-    await background_threads.run(process_details,mls,resp_body,resp_body_ah,resp_body_bp,resp_body_ns,filename,is_first_page)
+    await background_threads.run(process_details,mls,resp_body,resp_body_ah,resp_body_bp,resp_body_ns,filename,is_first_page,df)
