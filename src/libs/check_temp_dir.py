@@ -5,14 +5,20 @@ def check_temp_dir():
     if os.path.exists(os.path.join(BaseConfig.BASE_DIR,"temp")):
         print("temp folder is available")
         
-        try:
-            for status in ['active','sold','expired']:
+        for status in ['active','sold','expired']:
+            try:
                 os.mkdir(os.path.join(BaseConfig.BASE_DIR,f"temp/{status}"))
+            except Exception as err:
+                (f"Error while creating temp sub-dir - {err}")
+            try:
                 os.mkdir(os.path.join(BaseConfig.BASE_DIR,f"temp/{status}/csv"))
+            except Exception as err:
+                (f"Error while creating temp sub-dir - {err}")
+            try:
                 os.mkdir(os.path.join(BaseConfig.BASE_DIR,f"temp/{status}/img"))
-        except Exception as err:
-            print(f"Error while creating temp sub-dir - {err}")
-        
+            except Exception as err:
+                (f"Error while creating temp sub-dir - {err}")
+            
     else:
         print("Creating temp folder...")
         
@@ -28,7 +34,19 @@ def check_temp_dir():
 def check_mls_img_dir(mls :str, property_status: str='active'):
     mls_dir = os.path.join(BaseConfig.BASE_DIR,f"temp/{property_status}/img/{mls}")
     if not os.path.exists(mls_dir):
+        
+        try:
+            os.mkdir(os.path.join(BaseConfig.BASE_DIR,f"temp/{property_status}"))
+        except Exception as err:
+            (f"Error while creating temp sub-dir - {err}")
+        
+        try:
+            os.mkdir(os.path.join(BaseConfig.BASE_DIR,f"temp/{property_status}/img"))
+        except Exception as err:
+            (f"Error while creating temp sub-dir - {err}")
+        
         os.mkdir(mls_dir)
+
     return mls_dir
     
 def check_result_file(property_status: str='active', page: str='search', start: int=1, end: int=10) -> bool:

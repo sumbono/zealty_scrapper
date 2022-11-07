@@ -1,38 +1,33 @@
 # Zealty Scraper Script
 
-## Using pip
-
-1. Initialize virtual environment python with `python3 -m venv venv`
-2. Install required libraries with `pip install -r requirements.txt`
-3. Install the playwright with `playwright install`
-4. Check --help with `python3 cli.py --help`  to see the cli documentations. 
-5. Run script with `python3 cli.py <page> <property_status> --start <start_page> --end <end_page>`
-6. The csv file would be generated in `temp/<page>/<property_status>_<start_page>_<end_page>.csv`
-
-##
-
-## Using poetry
-### Environment setup
-- install poetry on your linux machine 
+## Environment setup
+- install poetry on your machine 
 ```bash
-$ curl -sSL https://install.python-poetry.org | POETRY_VERSION=1.1.15 python -
-$ export PATH="$HOME/.local/bin:$PATH"
+$ pip install poetry==1.1.15
 ```
-- For other OS machine follow this: [Poetry](https://python-poetry.org/docs/#installation)
+- another option is use `pip3`, if `pip` doesn't work
+- restart your command-line or terminal
+- check poetry installation:
+```bash
+$ poetry --version
+```
+- if no error, then your environment ready.
 
-
-### Crawling Guide
-#### Install dependencies 
+## Install dependencies 
 ```bash
 $ cd zealty_scraper
 $ poetry install
 $ poetry run playwright install
 ```
 
-#### Check the --help cli documentations
+## Crawling guide
+
+### Check the --help cli documentations
+- Check --help with `poetry run python src/cli.py --help`  to see the cli documentations. 
+
 ```bash
 $ poetry run python src/cli.py --help
-usage: cli.py [-h] [--start START] [--end END] [--img IMG] [--debug DEBUG] page property_status
+usage: cli.py [-h] [--start START] [--end END] [--img IMG] [--only-img ONLY_IMG] [--debug DEBUG] page property_status
 
 A crawler of Zealty.ca
 
@@ -45,23 +40,25 @@ optional arguments:
   --start START, -s START
                         The first page number to be crawled. If not set, default value is 1.
   --end END, -e END     The last page number to be crawled. If not set, default value is 10.
-  --img IMG, -i IMG     For `detail` Page only. The option to download the image of each property. Available choices: 'yes' or 'no'.
-                        If not set, default value is 'no'.
+  --img IMG, -i IMG     For `detail` Page only. The option to download the image of each property. Available choices: 'yes' or 'no'. If not set, default value is 'no'.
+  --only-img ONLY_IMG, -o ONLY_IMG
+                        For `detail` Page only. The option to download just the image of each property, not the details. Available choices: 'yes' or 'no'. If not set, default value is 'no'.
   --debug DEBUG, -d DEBUG
                         The option for testing purpose. Available choices: 'yes' or 'no'. If not set, default value is 'no'.
-
 ```
 
-#### Start your crawler
+### Start your crawler
+- Run script with `poetry run python src/cli.py <page> <property_status> --start <start_page> --end <end_page>`
 - example: to crawl `search` page, for `active` property, from page `5` to `10`.
 ```bash
 $ poetry run python src/cli.py search active --start 5 --end 10
 ```
 
-#### Results
-The csv file would be generated in `temp/<property_status>/<page>_<start_page>_<end_page>.csv`
+### Results
+- The csv file would be generated in `temp/<page>/<property_status>_<start_page>_<end_page>.csv`
 
-Notes:
+
+### Notes:
 - `property_status`: 'active', 'sold', 'expired'.
 - `page`: 'search' or 'detail'.
 - `start_page`: number of the initial page to be crawl.

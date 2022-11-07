@@ -35,7 +35,7 @@ async def search(property_status: str='sold', page_start: int=1, page_end: int=1
         
         check_temp_dir()
         context, page = await email_login(SEARCH_URL, browser)
-        # page.on("response", on_response)
+        page.on("response", on_response)
         
         await page.wait_for_selector("#searchResults > div.noprint > div > div > i")
         await page.click("#searchResults > div.noprint > div > div > i")

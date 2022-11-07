@@ -112,16 +112,21 @@ async def mls_detail(
         df: pd.DataFrame=None
     ) -> None:
     
+    if property_status!='active':
+        timeout = 5.0
+    else:
+        timeout = 30.0
+
     await page.goto(url=url, wait_until="commit")
     
     try:
-        await page.wait_for_selector("div#container")
-        await page.wait_for_selector("div#container > div > div#details-section")
-        await page.wait_for_selector("div#container > div > div.section-tile")
-        await page.wait_for_selector("div#container > div > div#rateHub")
-        # await page.wait_for_selector("div#container > div#photo-section")
-        await page.wait_for_selector("div#container > div#more-info-section")
-        await page.wait_for_selector("#schools > div > table.stripedTable")
+        await page.wait_for_selector("div#container", timeout=timeout)
+        await page.wait_for_selector("div#container > div > div#details-section", timeout=timeout)
+        await page.wait_for_selector("div#container > div > div.section-tile", timeout=timeout)
+        await page.wait_for_selector("div#container > div > div#rateHub", timeout=timeout)
+        # await page.wait_for_selector("div#container > div#photo-section", timeout=timeout)
+        await page.wait_for_selector("div#container > div#more-info-section", timeout=timeout)
+        await page.wait_for_selector("#schools > div > table.stripedTable", timeout=timeout)
     except Exception as err:
         print(f"Error while waiting elements - {err}")
     

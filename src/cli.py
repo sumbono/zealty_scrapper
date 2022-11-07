@@ -40,6 +40,16 @@ def main():
         )
     )
     parser.add_argument(
+        "--only-img", "-o",
+        help=(
+            """
+            For `detail` Page only. The option to download just the image of each property, not the details. 
+            Available choices: 'yes' or 'no'.
+            If not set, default value is 'no'.
+            """
+        )
+    )
+    parser.add_argument(
         "--debug", "-d",
         help=(
             """
@@ -56,13 +66,14 @@ def main():
     end_page = args.end or '10'
     with_img = True if args.img=='yes' else False
     debug = True if args.debug=='yes' else False
+    img_only = True if args.only_img=='yes' else False
     
     start_time = time.time()
     
     if args.page == 'search':
         asyncio.run(search(property_status=prop_status, page_start=int(start_page), page_end=int(end_page), debug=debug))
     else:
-        asyncio.run(detail(property_status=prop_status, page_start=int(start_page), page_end=int(end_page), download_img=with_img, debug=debug))
+        asyncio.run(detail(property_status=prop_status, page_start=int(start_page), page_end=int(end_page), download_img=with_img, debug=debug, img_only=img_only))
     
     print("\n--- %s seconds ---" % (time.time() - start_time))
 
