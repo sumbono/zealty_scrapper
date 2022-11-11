@@ -53,9 +53,17 @@ optional arguments:
 ```bash
 $ poetry run python src/cli.py search active --start 5 --end 10
 ```
+- get `detail` page with image
+```bash
+$ poetry run python src/cli.py detail active --start 5 --end 10 --img yes
+```
+- get `detail` for image only
+```bash
+$ poetry run python src/cli.py detail active --start 5 --end 10 --only-img yes
+```
 
 ### Results
-- The csv file would be generated in `temp/<page>/<property_status>_<start_page>_<end_page>.csv`
+- The csv file would be generated in `temp/<property_status>/csv/<page>_<property_status>_<start_page>_<end_page>.csv`
 
 
 ### Notes:
@@ -63,3 +71,19 @@ $ poetry run python src/cli.py search active --start 5 --end 10
 - `page`: 'search' or 'detail'.
 - `start_page`: number of the initial page to be crawl.
 - `end_page`: number of the final page to be crawl.
+
+#### Sorting Rule on the `search` page:
+1. `active` sorted by `Days on Market (low to high)`
+2. `sold` sorted by `Sale Date (recent first)`
+3. `expired` sorted by `Off Market Date (recent first)`
+
+
+## Features
+- Crawl multiple property on `search` page.
+  - Result on crawl the `search` page: csv file with 152 column details.
+- Crawl additional information about the property on `detail` page: 
+      - List of nearby schools, 
+      - List of building permits, 
+      - List of assessment detail.
+  - Result on crawl the `detail` page: csv file with 152 + 3 column details.
+  - Only property with status `active` will be crawl for `detail` page.

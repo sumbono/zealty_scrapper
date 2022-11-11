@@ -50,4 +50,4 @@ def check_mls_img_dir(mls :str, property_status: str='active'):
     return mls_dir
     
 def check_result_file(property_status: str='active', page: str='search', start: int=1, end: int=10) -> bool:
-    return os.path.isfile(os.path.join(BaseConfig.BASE_DIR, f"temp/{property_status}/csv/{page}_{start}_{end}.csv"))
+    return os.path.isfile(os.path.join(BaseConfig.BASE_DIR, f"temp/{property_status}/csv/{page}_{property_status}_{start}_{end}.csv"))

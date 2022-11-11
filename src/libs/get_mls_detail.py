@@ -74,12 +74,13 @@ def process_details(
 ):
     
     try:
-        if resp_body['rows'][0][0] != mls:
-            resp_body = None
+        for rp in resp_body['rows']:
+            if rp[0] == mls:
+                resp_body['rows'] = [rp]
     except Exception as err:
         print(f"Error while parsing resp_body - {err}")
-        
-    prop_main_detail = df
+    
+    prop_main_detail = export_result(resp_body, df=df) # if resp_body else df
     
     if resp_body and resp_body_ns:
         nearby_schools: list = export_result(resp_body=resp_body_ns, resp_name='svcGetInfoDB')
@@ -112,12 +113,13 @@ async def mls_detail(
         df: pd.DataFrame=None
     ) -> None:
     
-    if property_status!='active':
-        timeout = 5.0
-    else:
-        timeout = 30.0
-
+    timeout = 20000
     await page.goto(url=url, wait_until="commit")
+    
+    page.on("response", on_response)
+    page.on("response", on_response_ns)
+    page.on("response", on_response_bp)
+    page.on("response", on_response_ah)
     
     try:
         await page.wait_for_selector("div#container", timeout=timeout)
@@ -130,12 +132,7 @@ async def mls_detail(
     except Exception as err:
         print(f"Error while waiting elements - {err}")
     
-    await page.wait_for_timeout(3000)
-    
-    page.on("response", on_response)
-    page.on("response", on_response_ns)
-    page.on("response", on_response_bp)
-    page.on("response", on_response_ah)
+    await page.wait_for_timeout(5000)
     
     print("Start process the data...")
     await background_threads.run(process_details,mls,resp_body,resp_body_ah,resp_body_bp,resp_body_ns,filename,is_first_page,df)

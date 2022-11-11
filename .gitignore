@@ -168,3 +168,5 @@ cookie_state.json
 temp/active/img/*
 temp/sold/img/*
 temp/expired/img/*
+
+*.sh

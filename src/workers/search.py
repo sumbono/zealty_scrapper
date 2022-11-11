@@ -28,6 +28,8 @@ async def on_response(response):
         
 async def search(property_status: str='sold', page_start: int=1, page_end: int=10, debug: bool=False) -> None:
     
+    filename = f"{property_status}/csv/search_{property_status}_{page_start}_{page_end}"
+
     async with async_playwright() as p:
         
         chromium = p.chromium
@@ -78,6 +80,20 @@ async def search(property_status: str='sold', page_start: int=1, page_end: int=1
         await page.locator("div#typeMenuPanel > div > label > div > div > input[value='COM']").check()
 
         await page.locator("div#typeMenuPanel > div > div > button.tall:has-text('Done')").click()
+        
+        '''
+        Sorting the search results for each status:
+        1. active sorted by 'Days on Market (low to high)'
+        2. sold sorted by 'Sale Date (recent first)'
+        3. expired sorted by 'Off Market Date (recent first)'
+        '''
+        if property_status=='active':
+            await page.evaluate(f"gSortOrder = parseInt({2}, 10); savePreferences(); doSearch(1, false);")
+        elif property_status=='sold':
+            await page.evaluate(f"gSortOrder = parseInt({10}, 10); savePreferences(); doSearch(1, false);")
+        else:
+            await page.evaluate(f"gSortOrder = parseInt({11}, 10); savePreferences(); doSearch(1, false);")
+        
         await page.wait_for_timeout(5000)
         page.on("response", on_response)
         
@@ -87,7 +103,7 @@ async def search(property_status: str='sold', page_start: int=1, page_end: int=1
                 print(f"Getting the #{num} page properties's details...")
                 export_result(
                     resp_body=resp_body, 
-                    filename=f"{property_status}/csv/search_{page_start}_{page_end}", 
+                    filename=filename, 
                     resp_name='svcFetchDB', 
                     is_first_page=True, 
                     is_search=True
@@ -100,7 +116,7 @@ async def search(property_status: str='sold', page_start: int=1, page_end: int=1
                 page.on("response", on_response)
                 export_result(
                     resp_body=resp_body, 
-                    filename=f"{property_status}/csv/search_{page_start}_{page_end}", 
+                    filename=filename, 
                     resp_name='svcFetchDB', 
                     is_first_page=True, 
                     is_search=True
@@ -113,13 +129,13 @@ async def search(property_status: str='sold', page_start: int=1, page_end: int=1
                 page.on("response", on_response)
                 export_result(
                     resp_body=resp_body, 
-                    filename=f"{property_status}/csv/search_{page_start}_{page_end}", 
+                    filename=filename, 
                     resp_name='svcFetchDB', 
                     is_search=True
                 )
             
             if debug:
-                await page.screenshot(path=f"{BaseConfig.BASE_DIR}/temp/{property_status}/csv/search_page_{num}.png")
+                await page.screenshot(path=f"{BaseConfig.BASE_DIR}/temp/{property_status}/csv/search_page_{num}.png", full_page=True)
         
         await page.close()
         await browser.close()
