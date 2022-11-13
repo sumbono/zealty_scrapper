@@ -170,3 +170,5 @@ temp/sold/img/*
 temp/expired/img/*
 
 *.sh
+
+*.env

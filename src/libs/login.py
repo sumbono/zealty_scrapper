@@ -1,13 +1,12 @@
+import os
+
 from playwright.async_api import Browser, BrowserContext, Page
 from typing import Tuple
 
 from config import BaseConfig
 
-
-login = "lunatictina1@outlook.com"
-password = "!$K$cmkkT6YjMw2"
-# login = "samwiro2209@gmail.com"
-# password = "wiro2209sam"
+login = os.getenv("login","lunatictina1")
+password = os.getenv("password","!$K$cmkk")
 
 async def email_login(url:str, browser: Browser) -> Tuple[BrowserContext, Page]:
     context = await browser.new_context()
