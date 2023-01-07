@@ -1,5 +1,12 @@
 # Zealty Scraper Script
 
+## Command Sample
+```bash
+$ poetry run python src/cli.py search active --start 1 --end 1
+$ poetry run python src/cli.py search sold --start 1 --end 1
+$ poetry run python src/cli.py search expired --start 1 --end 1
+```
+
 ## Environment setup
 - install poetry on your machine 
 ```bash
@@ -13,11 +20,34 @@ $ poetry --version
 ```
 - if no error, then your environment ready.
 
+## Set up  with conda and poetry
+- https://felix11h.github.io/notes/ops/poetry.html
+- create poetry env
+```bash
+$ poetry env use python
+```
+- verify python path and virtualenv location
+```bash
+$ poetry env info
+```
+- however, when running Jupyter notebooks, inside conda virtual environment, selecting conda kernal instead of peotry kernal
+
 ## Install dependencies 
 ```bash
 $ cd zealty_scraper
 $ poetry install
 $ poetry run playwright install
+```
+
+## Set up env viarables 
+```bash
+$ poetry add python-dotenv
+```
+
+```bash
+from dotenv import load_dotenv
+load_dotenv()
+scraper_path = os.getenv("SCRAPER_PATH")
 ```
 
 ## Crawling guide

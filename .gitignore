@@ -77,6 +77,8 @@ target/
 
 # Jupyter Notebook
 .ipynb_checkpoints
+*.ipynb_checkpoints
+
 
 # IPython
 profile_default/
@@ -165,6 +167,7 @@ cookie_state.json
 *.csv
 *.png
 # *.jpg
+temp/*
 temp/active/img/*
 temp/sold/img/*
 temp/expired/img/*
