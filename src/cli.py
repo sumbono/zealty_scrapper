@@ -50,6 +50,76 @@ def main():
         )
     )
     parser.add_argument(
+        "--url", "-u",
+        help=(
+            """
+            For `detail` Page only. The option to crawl the details of single url. 
+            If not set, default value is empty string ('').
+            """
+        )
+    )
+    parser.add_argument(
+        "--custom-file", "-cf",
+        help="""
+            For `detail` Page only. The option to crawl the details of single custom file.\n
+            The base directory is the project directory root.\n
+            Example format:\n
+            - 'my_custom_file.csv' -> in root project directory.\n
+            - 'temp/my_custom_file.csv' -> in root/temp/ project directory.\n
+            - 'src/my_custom_file.csv' -> in root/src/ project directory.\n
+            If not set, default value is empty string ('').
+            """
+    )
+    parser.add_argument(
+        "--active-age", "-aa",
+        help="""
+            For `search` Page and 'active' status only. The option to crawl by active age on the listing.\n
+            Available choices:\n
+            - "today"
+            - "today & yesterday"
+            - "last 7 days"
+            - "last 14 days"
+            - "yesterday"
+            - "this month"
+            - "last month"
+            - "this year"
+            - "last year"
+            - "15+ days"
+            - "30+ days"
+            - "60+ days"
+            - "90+ days"
+            - "120+ days"
+            - "180+ days"
+            .
+            If not set, default value is empty string ('').
+            """
+    )
+    parser.add_argument(
+        "--sold-age", "-sa",
+        help="""
+            For `search` Page and 'sold'/'expired' status only. The option to crawl by sold age on the listing.\n
+            Available choices:\n
+            - "today"
+            - "yesterday"
+            - "last 7 days"
+            - "last 14 days"
+            - "last 30 days"
+            - "last 60 days"
+            - "last 90 days"
+            - "last 6 months"
+            - "last 12 months"
+            - "last 24 months"
+            - "last 36 months"
+            - "yesterday"
+            - "this month"
+            - "last month"
+            - "this year"
+            - "last year"
+            .
+            If not set, default value is empty string ('').
+            """
+    )
+    parser.add_argument(
         "--debug", "-d",
         help=(
             """
@@ -67,13 +137,20 @@ def main():
     with_img = True if args.img=='yes' else False
     debug = True if args.debug=='yes' else False
     img_only = True if args.only_img=='yes' else False
+    url = args.url or ''
+    custom_csv_file = args.custom_file or ''
+    active_age = args.active_age or ''
+    sold_age = args.sold_age or ''
     
     start_time = time.time()
     
+    print(f"active_age: {active_age}")
+    print(f"sold_age: {sold_age}")
+
     if args.page == 'search':
-        asyncio.run(search(property_status=prop_status, page_start=int(start_page), page_end=int(end_page), debug=debug))
+        asyncio.run(search(property_status=prop_status, page_start=int(start_page), page_end=int(end_page), debug=debug, active_age=active_age, sold_age=sold_age))
     else:
-        asyncio.run(detail(property_status=prop_status, page_start=int(start_page), page_end=int(end_page), download_img=with_img, debug=debug, img_only=img_only))
+        asyncio.run(detail(property_status=prop_status, page_start=int(start_page), page_end=int(end_page), download_img=with_img, debug=debug, img_only=img_only, url=url, custom_csv_file=custom_csv_file))
     
     print("\n--- %s seconds ---" % (time.time() - start_time))
 
