@@ -27,7 +27,7 @@ $ poetry run playwright install
 
 ```bash
 $ poetry run python src/cli.py --help
-usage: cli.py [-h] [--start START] [--end END] [--img IMG] [--only-img ONLY_IMG] [--debug DEBUG] page property_status
+usage: cli.py [-h] [--start START] [--end END] [--img IMG] [--only-img ONLY_IMG] [--url URL] [--custom-file CUSTOM_FILE] [--active-age ACTIVE_AGE] [--sold-age SOLD_AGE] [--debug DEBUG] page property_status
 
 A crawler of Zealty.ca
 
@@ -43,6 +43,16 @@ optional arguments:
   --img IMG, -i IMG     For `detail` Page only. The option to download the image of each property. Available choices: 'yes' or 'no'. If not set, default value is 'no'.
   --only-img ONLY_IMG, -o ONLY_IMG
                         For `detail` Page only. The option to download just the image of each property, not the details. Available choices: 'yes' or 'no'. If not set, default value is 'no'.
+  --url URL, -u URL     For `detail` Page only. The option to crawl the details of single url. If not set, default value is empty string ('').
+  --custom-file CUSTOM_FILE, -cf CUSTOM_FILE
+                        For `detail` Page only. The option to crawl the details of single custom file. The base directory is the project directory root. Example format: - 'my_custom_file.csv' -> in root project directory. -
+                        'temp/my_custom_file.csv' -> in root/temp/ project directory. - 'src/my_custom_file.csv' -> in root/src/ project directory. If not set, default value is empty string ('').
+  --active-age ACTIVE_AGE, -aa ACTIVE_AGE
+                        For `search` Page and 'active' status only. The option to crawl by active age on the listing. Available choices: - "today" - "today & yesterday" - "last 7 days" - "last 14 days" - "yesterday" - "this month" - "last      
+                        month" - "this year" - "last year" - "15+ days" - "30+ days" - "60+ days" - "90+ days" - "120+ days" - "180+ days" . If not set, default value is empty string ('').
+  --sold-age SOLD_AGE, -sa SOLD_AGE
+                        For `search` Page and 'sold'/'expired' status only. The option to crawl by sold age on the listing. Available choices: - "today" - "yesterday" - "last 7 days" - "last 14 days" - "last 30 days" - "last 60 days" - "last   
+                        90 days" - "last 6 months" - "last 12 months" - "last 24 months" - "last 36 months" - "yesterday" - "this month" - "last month" - "this year" - "last year" . If not set, default value is empty string ('').
   --debug DEBUG, -d DEBUG
                         The option for testing purpose. Available choices: 'yes' or 'no'. If not set, default value is 'no'.
 ```
@@ -81,9 +91,69 @@ $ poetry run python src/cli.py detail active --start 5 --end 10 --only-img yes
 ## Features
 - Crawl multiple property on `search` page.
   - Result on crawl the `search` page: csv file with 152 column details.
+
 - Crawl additional information about the property on `detail` page: 
-      - List of nearby schools, 
-      - List of building permits, 
-      - List of assessment detail.
+  - List of nearby schools, 
+  - List of building permits, 
+  - List of assessment detail.
   - Result on crawl the `detail` page: csv file with 152 + 3 column details.
   - Only property with status `active` will be crawl for `detail` page.
+
+- New Features:
+  - 
+  - Crawl the details from custom csv file. 
+    - The custom csv file format must follow the `search` page result csv format.
+    - use `-cf` option then followed by file location path inside root project folder.
+    - Example:
+      - `poetry run python src/cli.py detail active -cf 'my_custom_file.csv'` -> in root project directory.
+      - `poetry run python src/cli.py detail sold -cf 'temp/my_custom_file.csv'` -> in root/temp/ project directory.
+      - `poetry run python src/cli.py detail expired -cf 'src/my_custom_file.csv'` -> in root/src/ project directory.
+
+  - Crawl by property age.
+    
+    - active-age for active property status.
+      
+      - `-aa` option, then followed by choices (select one). listed at:
+        - "today"
+        - "today & yesterday"
+        - "last 7 days"
+        - "last 14 days"
+        - "yesterday"
+        - "this month"
+        - "last month"
+        - "this year"
+        - "last year"
+        - "15+ days"
+        - "30+ days"
+        - "60+ days"
+        - "90+ days"
+        - "120+ days"
+        - "180+ days"
+      
+      - Example:
+        - `poetry run python src/cli.py search active -s 1 -e 5 -aa "today & yesterday"`
+        - `poetry run python src/cli.py search active -s 1 -e 5 -aa "120+ days"`
+    
+    - sold-age for sold and expired property status.
+      
+      - `-sa` option, then followed by choices (select one), sold at:
+        - "today"
+        - "today & yesterday"
+        - "last 7 days"
+        - "last 14 days"
+        - "last 30 days"
+        - "last 60 days"
+        - "last 90 days"
+        - "last 6 months"
+        - "last 12 months"
+        - "last 24 months"
+        - "last 36 months"
+        - "yesterday"
+        - "this month"
+        - "last month"
+        - "this year"
+        - "last year"
+      
+      - Example:
+        - `poetry run python src/cli.py search sold -s 1 -e 5 -sa "yesterday"`
+        - `poetry run python src/cli.py search expired -s 1 -e 5 -sa "last 24 months"`
