@@ -24,9 +24,16 @@ def img_url_process(x: str) -> list:
           y.append(urljoin('http://', el))
     return y
   
-def export_svcFetchDB(resp_body: dict, filename: str='', is_first_page: bool=False, is_search: bool=False) -> pd.DataFrame:
+def listing_status(x: str) -> str:
+  if x=='A':
+    return 'For Sale'
+  elif x=='S':
+    return 'Sold'
+  else:
+    return str(x).title()
+  
+def export_svcFetchDB(resp_body: dict, filename: str='', is_first_page: bool=False, is_search: bool=False, df: pd.DataFrame=None) -> pd.DataFrame:
   df = pd.DataFrame(resp_body["rows"])
-
   mapping = {
     df.columns[0]: 'MLS', 
     df.columns[1]: 'Latitude', 
@@ -224,7 +231,6 @@ def export_svcFetchDB(resp_body: dict, filename: str='', is_first_page: bool=Fal
     "Postcode",
     'Latitude', 
     'Longitude', 
-
  
     "Style of Building",
     "Bedrooms",
@@ -369,37 +375,46 @@ def export_svcFetchDB(resp_body: dict, filename: str='', is_first_page: bool=Fal
     header = False
   
   if is_search:
-    su.to_csv(f"{BaseConfig.BASE_DIR}/temp/{filename}.csv", columns=columns, index=False, mode=write_mode, header=header)
+    # su.to_csv(f"{BaseConfig.BASE_DIR}/temp/{filename}.csv", index=False, mode=write_mode, header=header)
+    su.to_csv(filename, index=False, mode=write_mode, header=header)
 
   return su
-    
-def export_svcGetInfoDB(resp_body: dict) -> Union[pd.DataFrame, List]:
+  
+  
+def export_svcGetInfoDB(resp_body: dict) -> List:
   columns = resp_body["columns"]
   rows = resp_body["rows"]
-  data = []
-  for row in rows:
-    col_row = dict(zip(columns,row))
-    data.append(col_row)
-  return data
+  return [dict(zip(columns,row)) for row in rows]
   
-def export_svcGetPermits(resp_body: dict) -> Union[pd.DataFrame, List]:
+def export_svcGetPermits(resp_body: dict) -> pd.DataFrame:
   df = pd.DataFrame(resp_body["rows"])
   
 def export_svcGetAssessmentHistory(resp_body: dict) -> Union[pd.DataFrame, List]:
   assessments: Dict = resp_body['assessments']
-  # print(f"assessments:")
-  # print(assessments)
   if 'pid' in assessments:
     assessments.pop('pid')
   data = []
   for k,v in assessments.items():
     v['year'] = k
     data.append(v)
-  # print(f"assessments:")
-  # print(data)
   return data
 
+def export_svcGetHistoryMLS(resp_body: List) -> Union[pd.DataFrame, List]:
+  actions: Dict = {'S': 'Sold', 'L': 'Listed', 'T': 'Terminated', 'X': 'Expired'}
+  results: List = []
+  for el in resp_body:
+    results.append({
+      "action": actions.get(el["action"],el["action"]),
+      "brokerage" : el["brokerage"],
+      "mlsNumber": el["mlsNumber"],
+      "pid": el["pid"],
+      "actionDate": el["date"],
+      "actionPrice": float(el["price"])*1000
+    })
+  return results
 
+def export_svcGetStatistics(resp_body: dict) -> dict:
+  return resp_body
 
 def export_result(
     resp_body: dict={}, filename: str='', resp_name: str='svcFetchDB', 
@@ -414,7 +429,9 @@ def export_result(
     else:
       write_mode = 'a'
       header = False
-    df.to_csv(f"{BaseConfig.BASE_DIR}/temp/{filename}.csv", index=False, mode=write_mode, header=header)
+    # df = df.replace(float('nan'), '', regex=True)
+    # df.to_csv(f"{BaseConfig.BASE_DIR}/temp/{filename}.csv", index=False, mode=write_mode, header=header)
+    df.to_csv(filename, index=False, mode=write_mode, header=header)
     
   else:
     if resp_name=='svcFetchDB':
@@ -425,5 +442,9 @@ def export_result(
       return export_svcGetPermits(resp_body)
     elif resp_name=='svcGetAssessmentHistory':
       return export_svcGetAssessmentHistory(resp_body)
+    elif resp_name=='svcGetHistoryMLS':
+      return export_svcGetHistoryMLS(resp_body)
+    elif resp_name=='svcGetStatistics':
+      return export_svcGetStatistics(resp_body)
     else:
       return None

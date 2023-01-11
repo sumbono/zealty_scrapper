@@ -1,13 +1,12 @@
+import os
+
 from playwright.async_api import Browser, BrowserContext, Page
 from typing import Tuple
 
 from config import BaseConfig
 
-
-login = "lunatictina1@outlook.com"
-password = "!$K$cmkkT6YjMw2"
-# login = "samwiro2209@gmail.com"
-# password = "wiro2209sam"
+login = os.getenv("login","lunatictina1@outlook.com")
+password = os.getenv("password","!$K$cmkkT6YjMw2")
 
 async def email_login(url:str, browser: Browser) -> Tuple[BrowserContext, Page]:
     context = await browser.new_context()
@@ -21,15 +20,24 @@ async def email_login(url:str, browser: Browser) -> Tuple[BrowserContext, Page]:
     await page.locator("#logButton").click()
     
     print("Typing email ...")
-    await page.wait_for_selector('#loginForm > input[type=text]:nth-child(6)')#.is_visible()
-    await page.fill('#loginForm > input[type=text]:nth-child(6)', login)
+    if "search.html" in url:
+        await page.wait_for_selector('#loginForm > input[type=text]:nth-child(6)')#.is_visible()
+        await page.fill('#loginForm > input[type=text]:nth-child(6)', login)
+    else:
+        await page.wait_for_selector('#uForm > input[type=text]:nth-child(7)')#.is_visible()
+        await page.fill('#uForm > input[type=text]:nth-child(7)', login)
     
     print("Typing Password ...")
-    await page.wait_for_selector('#loginForm > input[type=password]:nth-child(9)')#.is_visible()
-    await page.fill('#loginForm > input[type=password]:nth-child(9)', password)
-    
+    if "search.html" in url:
+        await page.wait_for_selector('#loginForm > input[type=password]:nth-child(9)')#.is_visible()
+        await page.fill('#loginForm > input[type=password]:nth-child(9)', password)
+    else:
+        await page.wait_for_selector('#uForm > input[type=password]:nth-child(10)')#.is_visible()
+        await page.fill('#uForm > input[type=password]:nth-child(10)', password)
+        
     print("Click login button")
-    await page.click('#loginForm > div:nth-child(13) > button:nth-child(2)')
+    # await page.click('#loginForm > div:nth-child(13) > button:nth-child(2)')
+    await page.evaluate(f"userLogin();")
 
     await page.wait_for_timeout(5000)
     
