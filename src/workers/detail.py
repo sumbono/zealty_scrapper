@@ -79,17 +79,15 @@ async def detail(
                             is_first_page = False
                         try:
                             await mls_detail(
-                                page, custom_prop_meta[idx]['mls'], custom_prop_meta[idx]['url'], 
+                                page, el['mls'], el['url'], df=el['dataframe'], #, mode='custom_file' 
                                 property_status=property_status, filename=filename, is_first_page=is_first_page,
-                                df=custom_prop_meta[idx]['dataframe'] #, mode='custom_file'
                             )
                         except Exception as err:
                             time.sleep(random.randint(20,30))
                             try:
                                 await mls_detail(
-                                    page, custom_prop_meta[idx]['mls'], custom_prop_meta[idx]['url'], 
+                                    page, el['mls'], el['url'], df=el['dataframe'], #, mode='custom_file' 
                                     property_status=property_status, filename=filename, is_first_page=is_first_page,
-                                    df=custom_prop_meta[idx]['dataframe'] #, mode='custom_file'
                                 )
                             except Exception as err:
                                 print(f"Error occured while crawl details of mls-{el['mls']} - err: {err}")
