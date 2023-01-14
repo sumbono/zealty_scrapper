@@ -72,9 +72,15 @@ async def on_response(response):
 
 async def search(property_status: str='sold', page_start: int=1, page_end: int=10, debug: bool=False, active_age: str='', sold_age: str='') -> None:
     
-    filename = f"temp/{property_status}/csv/search_{property_status}_{page_start}_{page_end}.csv"
+    if active_age:
+        end_name = "_".join(active_age.replace('+',' more').split(' '))
+    elif sold_age:
+        end_name = "_".join(sold_age.replace('+',' more').split(' '))
+    else:
+        end_name = f"{page_start}_{page_end}"
+    filename = f"temp/{property_status}/csv/search_{property_status}_{end_name}.csv"
     filename = os.path.join(BaseConfig.BASE_DIR, filename)
-
+    
     # examine the age
     prop_active_age = active_age_conversion.get(active_age)
     prop_sold_age = sold_age_conversion.get(sold_age, "1095")
@@ -141,27 +147,46 @@ async def search(property_status: str='sold', page_start: int=1, page_end: int=1
         
         page.on("response", on_response)
         await page.wait_for_timeout(5000)
-        
+
+        #get total property
+        await page.wait_for_selector("div#foundCount")
+        total_raw = await page.text_content("div#foundCount")
+        try:
+            total_prop = total_raw.replace('found','').strip().replace(',','').strip()
+            total_prop = int(total_prop)
+        except Exception as err:
+            print(f"The total prop - {total_raw} - error_msg: {err}")
+            total_prop = int(page_end*28)
+
+        print(f"total_raw: {total_raw} - total_prop: {total_prop}")
+        page_end_tp = int(total_prop/28) + 1
+        if page_end_tp <= page_end:
+            page_end = page_end_tp
+            print(f"change the page_end to {page_end}")
+
         #scrape search results
         for num in range(page_start, page_end+1):
-            if num==1:
-                print(f"Getting the property list and its details on #{num} page...")
-                page.on("response", on_response)
-                export_result(resp_body=resp_body, filename=filename, resp_name='svcFetchDB', is_first_page=True, is_search=True)
-            elif num==page_start:
-                await page.evaluate(f'doSearch({num}, true);')
-                page.on("response", on_response)
-                await page.wait_for_timeout(5000)
-                print(f"Getting the property list and its details on #{num} page...")
-                page.on("response", on_response)
-                export_result(resp_body=resp_body, filename=filename, resp_name='svcFetchDB', is_first_page=True, is_search=True)
-            else:
-                await page.evaluate(f'doSearch({num}, true);')
-                page.on("response", on_response)
-                await page.wait_for_timeout(5000)
-                print(f"Getting the property list and its details on #{num} page...")
-                page.on("response", on_response)
-                export_result(resp_body=resp_body, filename=filename, resp_name='svcFetchDB', is_search=True)
+            try:
+                if num==1:
+                    print(f"Getting the property list and its details on #{num} page...")
+                    page.on("response", on_response)
+                    export_result(resp_body=resp_body, filename=filename, resp_name='svcFetchDB', is_first_page=True, is_search=True)
+                elif num==page_start:
+                    await page.evaluate(f'doSearch({num}, true);')
+                    page.on("response", on_response)
+                    await page.wait_for_timeout(5000)
+                    print(f"Getting the property list and its details on #{num} page...")
+                    page.on("response", on_response)
+                    export_result(resp_body=resp_body, filename=filename, resp_name='svcFetchDB', is_first_page=True, is_search=True)
+                else:
+                    await page.evaluate(f'doSearch({num}, true);')
+                    page.on("response", on_response)
+                    await page.wait_for_timeout(5000)
+                    print(f"Getting the property list and its details on #{num} page...")
+                    page.on("response", on_response)
+                    export_result(resp_body=resp_body, filename=filename, resp_name='svcFetchDB', is_search=True)
+            except Exception as err:
+                print(f"parsing #{num} page - err_msg: {err}")
             if debug:
                 await page.screenshot(path=f"{BaseConfig.BASE_DIR}/temp/{property_status}/csv/search_page_{num}.png", full_page=True)
         
