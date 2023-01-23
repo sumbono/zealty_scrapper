@@ -27,7 +27,7 @@ def main():
     )
     parser.add_argument(
         "--end", "-e",
-        help=("The last page number to be crawled. If not set, default value is 10.")
+        help=("The last page number to be crawled. If not set, default value is 10000.")
     )
     parser.add_argument(
         "--img", "-i",
@@ -133,7 +133,7 @@ def main():
     
     prop_status = args.property_status
     start_page = args.start or '1'
-    end_page = args.end or '10'
+    end_page = args.end or '10000'
     with_img = True if args.img=='yes' else False
     debug = True if args.debug=='yes' else False
     img_only = True if args.only_img=='yes' else False
@@ -152,7 +152,7 @@ def main():
     else:
         asyncio.run(detail(property_status=prop_status, page_start=int(start_page), page_end=int(end_page), download_img=with_img, debug=debug, img_only=img_only, url=url, custom_csv_file=custom_csv_file))
     
-    print("\n--- %s seconds ---" % (time.time() - start_time))
+    print("\n--- %s minutes ---" % int((time.time() - start_time)/60))
 
 if __name__ == "__main__":
     main()

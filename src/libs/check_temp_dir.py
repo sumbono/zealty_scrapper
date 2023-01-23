@@ -3,7 +3,7 @@ from config import BaseConfig
 
 def check_temp_dir():
     if os.path.exists(os.path.join(BaseConfig.BASE_DIR,"temp")):
-        print("temp folder is available")
+        print("'temp/' folder is available")
         
         for status in ['active','sold','expired']:
             try:
@@ -29,7 +29,7 @@ def check_temp_dir():
             os.mkdir(os.path.join(BaseConfig.BASE_DIR,f"temp/{status}/csv"))
             os.mkdir(os.path.join(BaseConfig.BASE_DIR,f"temp/{status}/img"))
         
-        print("/temp folder created!!")
+        print("'temp/' folder created!!")
         
 def check_mls_img_dir(mls :str, property_status: str='active'):
     mls_dir = os.path.join(BaseConfig.BASE_DIR,f"temp/{property_status}/img/{mls}")
